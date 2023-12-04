@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Projetos\\Putariazinha\\Putariazinha.csproj": {}
+    "D:\\Mocroski\\Workspace\\Projetos\\Putariazinha\\Putariazinha.csproj": {}
   },
   "projects": {
-    "D:\\Projetos\\Putariazinha\\Putariazinha.csproj": {
+    "D:\\Mocroski\\Workspace\\Projetos\\Putariazinha\\Putariazinha.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Projetos\\Putariazinha\\Putariazinha.csproj",
+        "projectUniqueName": "D:\\Mocroski\\Workspace\\Projetos\\Putariazinha\\Putariazinha.csproj",
         "projectName": "Putariazinha",
-        "projectPath": "D:\\Projetos\\Putariazinha\\Putariazinha.csproj",
-        "packagesPath": "C:\\Users\\devmo\\.nuget\\packages\\",
-        "outputPath": "D:\\Projetos\\Putariazinha\\obj\\",
+        "projectPath": "D:\\Mocroski\\Workspace\\Projetos\\Putariazinha\\Putariazinha.csproj",
+        "packagesPath": "C:\\Users\\lucas.mocroski\\.nuget\\packages\\",
+        "outputPath": "D:\\Mocroski\\Workspace\\Projetos\\Putariazinha\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\devmo\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\lucas.mocroski\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
