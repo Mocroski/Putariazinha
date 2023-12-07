@@ -6,23 +6,69 @@ class Program
 {
     static void Main()
     {
-        string connectionString = $"Data Source=SEXO;Initial Catalog=SEXO;Persist Security Info=True;User Id=SEXO;Password=SEXO";
+        string connectionString = $"Data Source=NONE;Initial Catalog=NONE;Persist Security Info=True;User Id=admin;Password=NONE";
 
         using (SqlConnection connection = new SqlConnection(connectionString))
         {
             connection.Open();
 
-            var cu = connection.Query("SELECT [a0].[Id], (\r\n    SELECT TOP(1) [a].[Id]\r\n    FROM [AppCheckPointVerificationRecords] AS [a]\r\n    WHERE ([a].[LocationVerificationRecordId] = [a0].[LocationVerificationRecordId])) AS [CheckPointVerificationRecordId], [a0].[Description], [a0].[CreationTime], [a0].[CreatorId], [a0].[LastModificationTime], [a0].[TenantId], [a0].[LastModifierId]\r\nFROM [AppPatrolIncidents] AS [a0]\r\nINNER JOIN (\r\n    SELECT [a1].[Id]\r\n    FROM [AppLocationVerificationRecords] AS [a1]  \r\n)AS [t] ON [a0].[LocationVerificationRecordId] = [t].[Id]");
+            var cu = connection.Query(@"SELECT
+                                                PatrolIncidents.Id,
+                                                PatrolIncidents.LocationVerificationRecordId,
+                                                (
+                                                    SELECT TOP(1) CheckPointVerification.Id
+                                                    FROM AppCheckPointVerificationRecords AS CheckPointVerification
+                                                    WHERE (CheckPointVerification.LocationVerificationRecordId = PatrolIncidents.LocationVerificationRecordId)
+                                                        ) AS CheckPointVerificationRecordId,
+                                                            PatrolIncidents.Description,
+                                                            PatrolIncidents.CreationTime,
+                                                            PatrolIncidents.CreatorId,
+                                                            PatrolIncidents.LastModificationTime,
+                                                            PatrolIncidents.TenantId,
+                                                            PatrolIncidents.LastModifierId
+                                                        FROM
+                                                            AppPatrolIncidents AS PatrolIncidents
+                                                            INNER JOIN (
+                                                                SELECT
+                                                                    LocationRecord.Id
+                                                                FROM
+                                                                    AppLocationVerificationRecords AS LocationRecord  
+                                                            ) AS LocationVerification ON PatrolIncidents.LocationVerificationRecordId = LocationVerification.Id");
             foreach (var item in cu)
             {
                 Console.WriteLine(item);
                 if (item.CheckPointVerificationRecordId == null)
                 {
-                    var sexo = connection.Query("SELECT TOP 1 [a].[Description] AS [CheckPointDescription], [t0].[Id] AS [CheckPointId], [t].[Id] \r\nAS [LocationVerificationRecordId], [a].[TenantId], [t0].[Longitude], [t0].[Latitude], [a].[CreatorId], [a].[CreationTime]\r\nFROM [AppPatrolIncidents] AS [a]\r\nINNER JOIN (\r\n    SELECT [a0].[Id], [a0].[LocationId]\r\n    FROM [AppLocationVerificationRecords] AS [a0]\r\n) AS [t] ON [a].[LocationVerificationRecordId] = [t].[Id]\r\nINNER JOIN (\r\n    SELECT TOP (1) [a1].[Id], [a1].[Latitude], [a1].[LocationId], [a1].[Longitude]\r\n    FROM [AppCheckPoints] AS [a1]\r\n) AS [t0] ON [t].[LocationId] = [t0].[LocationId]\r\nWHERE ([t].[Id] = [a].[LocationVerificationRecordId])");
+                    var sexo = connection.QueryFirst(@$"SELECT TOP (1)
+                                                        PatrolIncidents.Description AS CheckPointDescription,
+                                                        CheckpointsJoin.Id AS CheckPointId,
+                                                        LocationVerification.Id AS LocationVerificationRecordId,
+                                                        PatrolIncidents.TenantId,
+                                                        CheckpointsJoin.Longitude,
+                                                        CheckpointsJoin.Latitude,
+                                                        PatrolIncidents.CreatorId,
+                                                        PatrolIncidents.CreationTime 
+                                                            FROM
+                                                                AppPatrolIncidents AS PatrolIncidents
+                                                                    INNER JOIN (
+                                                                        SELECT
+                                                                            LocationRecord.Id,
+                                                                            LocationRecord.LocationId 
+                                                                        FROM
+                                                                            AppLocationVerificationRecords AS LocationRecord
+                                                                    ) AS LocationVerification ON PatrolIncidents.LocationVerificationRecordId = '{item.LocationVerificationRecordId}'
+                                                                        INNER JOIN (
+                                                                            SELECT TOP (1)
+                                                                                CheckpointsInnerJoin.Id,
+                                                                                CheckpointsInnerJoin.Latitude,
+                                                                                CheckpointsInnerJoin.LocationId,
+                                                                                CheckpointsInnerJoin.Longitude
+                                                                                FROM
+                                                                                    AppCheckPoints AS CheckpointsInnerJoin
+                                                                            ) AS CheckpointsJoin ON LocationVerification.LocationId = CheckpointsJoin.LocationId
+                                                    ");
 
-                    foreach (var cum in sexo)
-                    {
-                        Console.WriteLine(cum);
+                  
 
                         var newCuzinho = Guid.NewGuid();
 
@@ -32,58 +78,46 @@ class Program
                             new
                             {
                                 Id = newCuzinho,
-                                TenantId = cum.TenantId,
+                                TenantId = sexo.TenantId,
                                 QrCodeConfirmed = false,
-                                Longitude = cum.Longitude,
-                                Latitude = cum.Latitude,
-                                CheckPointId = cum.CheckPointId,
-                                CreationTime = cum.CreationTime,
-                                CreatorId = cum.CreatorId,
-                                CheckPointDescription = cum.CheckPointDescription,
-                                LocationVerificationRecordId = cum.LocationVerificationRecordId
+                                Longitude = sexo.Longitude,
+                                Latitude = sexo.Latitude,
+                                CheckPointId = sexo.CheckPointId,
+                                CreationTime = sexo.CreationTime,
+                                CreatorId = sexo.CreatorId,
+                                CheckPointDescription = sexo.CheckPointDescription,
+                                LocationVerificationRecordId = item.LocationVerificationRecordId
                             });
 
-                        var beforeSexo = connection.QueryFirstOrDefault($"SELECT * FROM AppCheckPointVerificationRecords WHERE ID = '{newCuzinho}'");
 
-                        Console.WriteLine("BEFORESEXSO:");
-                        Console.WriteLine(beforeSexo);
-
-                        //if (connection.QueryFirstOrDefault($"SELECT * FROM AppCheckPointIncidents WHERE ID = '{item.Id}'") != null)
-                        //{
-                        //    continue;
-                        //}
+                        var newCuzinho2 = Guid.NewGuid();
 
                         var analzinho = connection.Execute(
                            "INSERT INTO [AppCheckPointIncidents] (Id, Description, CheckPointVerificationRecordId, TenantId, CreationTime, CreatorId) " +
                            "VALUES (@Id, @Description, @CheckPointVerificationRecordId, @TenantId, @CreationTime, @CreatorId)",
                            new
                            {
-                               Id = item.Id,
+                               Id = newCuzinho2,
                                Description = item.Description,
-                               CheckPointVerificationRecordId = beforeSexo.Id,
+                               CheckPointVerificationRecordId = newCuzinho,
                                TenantId = item.TenantId,
                                CreationTime = item.CreationTime,
                                CreatorId = item.CreatorId
                            });
 
                         Console.WriteLine(analzinho);
-                    }
+                    
                 }
-
-                //if (connection.QueryFirstOrDefault($"SELECT * FROM AppCheckPointIncidents WHERE ID = '{item.Id}'") != null)
-                //{
-                //    continue;
-                //}
-
-
                 else
                 {
-                    var analzinho = connection.Execute(
+                    var newcuzinho3 = Guid.NewGuid();
+
+                    var analzinho2 = connection.Execute(
                            "INSERT INTO [AppCheckPointIncidents] (Id, Description, CheckPointVerificationRecordId, TenantId, CreationTime, CreatorId) " +
                            "VALUES (@Id, @Description, @CheckPointVerificationRecordId, @TenantId, @CreationTime, @CreatorId)",
                            new
                            {
-                               Id = item.Id,
+                               Id = newcuzinho3,
                                Description = item.Description,
                                CheckPointVerificationRecordId = item.CheckPointVerificationRecordId,
                                TenantId = item.TenantId,
@@ -91,7 +125,7 @@ class Program
                                CreatorId = item.CreatorId
                            });
 
-                    Console.WriteLine(analzinho);
+                    Console.WriteLine(analzinho2);
                 }
             }
             }
